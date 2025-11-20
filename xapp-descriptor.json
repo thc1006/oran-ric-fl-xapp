@@ -1,0 +1,169 @@
+{
+  "schema": "https://gerrit.o-ran-sc.org/r/gitweb?p=ric-plt/appmgr.git;a=blob_plain;f=api/appmgr_schema.json;hb=HEAD",
+  "config": {
+    "xapp_name": "federated-learning",
+    "version": "1.0.0",
+    "namespace": "ricxapp",
+    "description": "Federated Learning xApp for O-RAN Release J with CPU/GPU support"
+  },
+  "containers": [
+    {
+      "name": "federated-learning",
+      "image": {
+        "registry": "nexus3.o-ran-sc.org:10002",
+        "name": "o-ran-sc/ric-app-fl",
+        "tag": "1.0.0"
+      },
+      "command": [
+        "python3",
+        "-u",
+        "/app/src/federated_learning.py"
+      ]
+    }
+  ],
+  "messaging": {
+    "ports": [
+      {
+        "name": "rmr-data",
+        "container": "federated-learning",
+        "port": 4590,
+        "rxMessages": [
+          "FL_INIT_RESP",
+          "FL_MODEL_RESP",
+          "FL_GRADIENT_SEND",
+          "FL_AGG_MODEL_ACK",
+          "FL_TRAINING_STATUS",
+          "RIC_INDICATION"
+        ],
+        "txMessages": [
+          "FL_INIT_REQ",
+          "FL_MODEL_REQ",
+          "FL_GRADIENT_ACK",
+          "FL_AGG_MODEL_SEND"
+        ],
+        "policies": [],
+        "description": "RMR data port for federated learning message exchange"
+      },
+      {
+        "name": "rmr-route",
+        "container": "federated-learning",
+        "port": 4591,
+        "description": "RMR routing port"
+      }
+    ]
+  },
+  "rmr": {
+    "protPort": "tcp:4590",
+    "maxSize": 32768,
+    "numWorkers": 4,
+    "threadType": "default",
+    "lowLatency": false,
+    "fastAck": false,
+    "policies": [],
+    "txMessages": [
+      "FL_INIT_REQ",
+      "FL_MODEL_REQ",
+      "FL_GRADIENT_ACK",
+      "FL_AGG_MODEL_SEND"
+    ],
+    "rxMessages": [
+      "FL_INIT_RESP",
+      "FL_MODEL_RESP",
+      "FL_GRADIENT_SEND",
+      "FL_AGG_MODEL_ACK",
+      "FL_TRAINING_STATUS",
+      "RIC_INDICATION"
+    ]
+  },
+  "controls": {
+    "httpPort": 8110,
+    "endpoints": [
+      {
+        "path": "/health/alive",
+        "method": "GET",
+        "description": "Liveness probe"
+      },
+      {
+        "path": "/health/ready",
+        "method": "GET",
+        "description": "Readiness probe"
+      },
+      {
+        "path": "/fl/status",
+        "method": "GET",
+        "description": "Get federated learning status"
+      },
+      {
+        "path": "/fl/clients",
+        "method": "GET",
+        "description": "List registered FL clients"
+      },
+      {
+        "path": "/fl/start",
+        "method": "POST",
+        "description": "Manually trigger training round"
+      },
+      {
+        "path": "/fl/history",
+        "method": "GET",
+        "description": "Get training history"
+      },
+      {
+        "path": "/ric/v1/metrics",
+        "method": "GET",
+        "description": "Prometheus metrics endpoint"
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "objectName": "fl_rounds_total",
+      "objectInstance": "federated_learning",
+      "name": "fl_rounds_total",
+      "type": "counter",
+      "description": "Total number of federated learning rounds completed"
+    },
+    {
+      "objectName": "fl_active_clients",
+      "objectInstance": "federated_learning",
+      "name": "fl_active_clients",
+      "type": "gauge",
+      "description": "Number of currently active federated learning clients"
+    },
+    {
+      "objectName": "fl_global_accuracy",
+      "objectInstance": "federated_learning",
+      "name": "fl_global_accuracy",
+      "type": "gauge",
+      "description": "Current global model accuracy"
+    },
+    {
+      "objectName": "fl_convergence_rate",
+      "objectInstance": "federated_learning",
+      "name": "fl_convergence_rate",
+      "type": "gauge",
+      "description": "Model convergence rate"
+    }
+  ],
+  "livenessProbe": {
+    "httpGet": {
+      "path": "/health/alive",
+      "port": 8110
+    },
+    "initialDelaySeconds": 60,
+    "periodSeconds": 30,
+    "timeoutSeconds": 10,
+    "failureThreshold": 3
+  },
+  "readinessProbe": {
+    "httpGet": {
+      "path": "/health/ready",
+      "port": 8110
+    },
+    "initialDelaySeconds": 60,
+    "periodSeconds": 20,
+    "timeoutSeconds": 10,
+    "successThreshold": 1,
+    "failureThreshold": 3
+  }
+}
