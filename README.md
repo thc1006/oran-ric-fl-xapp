@@ -334,12 +334,6 @@ limitations under the License.
 - RIC Platform Team
 - Contributors (see [CONTRIBUTORS.md](CONTRIBUTORS.md))
 
-## Contact
-
-- **Issues**: [GitHub Issues](https://github.com/your-org/oran-ric-fl-xapp/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/oran-ric-fl-xapp/discussions)
-- **Email**: ric-dev@lists.o-ran-sc.org
-
 ## Links
 
 - [O-RAN Alliance](https://www.o-ran.org/)
